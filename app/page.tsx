@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, CalendarDays, Check, CircleDollarSign, LogOut, Plus, RefreshCw, Trash2, Wallet } from "lucide-react";
+import { Session } from "@supabase/supabase-js";
 import { CATEGORIES, Transaction, TransactionCategory, TransactionType } from "@/lib/types";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
@@ -16,7 +17,7 @@ const today = () => {
 };
 
 export default function Home() {
-  const [session, setSession] = useState<Awaited<ReturnType<NonNullable<typeof supabase>["auth"]["getSession"]>>["data"]["session"]>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -242,7 +243,7 @@ export default function Home() {
               <div className="panel-heading"><div><h2>Tambah transaksi</h2><p>Isi detail transaksi baru.</p></div><span className="heading-icon"><Plus size={19} /></span></div>
               <form className="stack-form" onSubmit={handleAdd}>
                 <div className="segmented">
-                  <button type="button" className={draft.tipe === "pengeluaran" ? "selected expense-choice" : ""} onClick={() => setDraft({ ...draft, tipe: "pengeluaran", kategori: draft.kategori === "Gaji" ? "Lainnya" : draft.kategori })}>Pengeluaran</button>
+                  <button type="button" className={draft.tipe === "pengeluaran" ? "selected expense-choice" : ""} onClick={() => setDraft({ ...draft, tipe: "pengeluaran", kategori: draft.kategori === "Gaji" ? "Makanan" : draft.kategori })}>Pengeluaran</button>
                   <button type="button" className={draft.tipe === "pemasukan" ? "selected income-choice" : ""} onClick={() => setDraft({ ...draft, tipe: "pemasukan" })}>Pemasukan</button>
                 </div>
                 <label>Tanggal<input type="date" required value={draft.tanggal} onChange={(e) => setDraft({ ...draft, tanggal: e.target.value })} /></label>

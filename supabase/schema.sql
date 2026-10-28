@@ -52,7 +52,7 @@ language sql
 stable
 security invoker
 set search_path = public
-as $
+as $$
   select
     coalesce(sum(t.jumlah) filter (where t.tipe = 'pemasukan'), 0) as total_pemasukan,
     coalesce(sum(t.jumlah) filter (where t.tipe = 'pengeluaran'), 0) as total_pengeluaran,
@@ -61,7 +61,7 @@ as $
   where t.user_id = (select auth.uid())
     and t.tanggal >= date_trunc('month', p_month)::date
     and t.tanggal < (date_trunc('month', p_month) + interval '1 month')::date;
-$;
+$$;
 
 revoke all on function public.get_monthly_transaction_summary(date) from public;
 revoke all on function public.get_monthly_transaction_summary(date) from anon;

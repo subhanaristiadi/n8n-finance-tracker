@@ -62,11 +62,7 @@ Rows with a non-numeric `Jumlah` are skipped by the current Code node. The curre
 - **Input/output:** Telegram Bot API
 - **Structured storage:** Google Sheets
 - **Extraction:** n8n Information Extractor
-- **Configured model in the latest supplied JSON:** Groq `openai/gpt-oss-20b`
-
-### Model configuration note
-
-The project instruction specifies **`qwen3.8-max`** for the Finance Bot. However, in the latest attached workflow JSON, the Information Extractor is connected to the **Groq Chat Model** configured as `openai/gpt-oss-20b`; the Alibaba Cloud node set to `qwen3.8-max` is present but unconnected. This repository documents the exported workflow as supplied and does not silently replace the model. Decide which model is intended, then update and test the n8n node explicitly.
+- **AI model:** Groq `openai/gpt-oss-20b`
 
 ## Repository layout
 
@@ -92,7 +88,7 @@ The committed workflow export is sanitized: credentials, credential IDs, Telegra
 3. In n8n, import `workflows/finance-tracker-telegram.sanitized.json`.
 4. Configure Telegram credentials and replace the trigger's allowed chat ID placeholder.
 5. Configure Google Sheets credentials, document ID, and worksheet reference in both Google Sheets nodes.
-6. Configure the LLM provider credentials on the model node. Review the model discrepancy documented above before activating the workflow.
+6. Configure the Groq credentials on the model node before activating the workflow.
 7. Inspect every node and expression, run the tests in `docs/testing.md`, and only then activate the workflow.
 
 Node parameters and available authentication options may vary by installed n8n and node version. Use the imported node UI and your installed version as the final configuration source.

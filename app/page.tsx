@@ -99,7 +99,10 @@ export default function Home() {
 
   useEffect(() => {
     if (session) void loadTransactions();
-    else setTransactions([]);
+    else {
+      setTransactions([]);
+      setSummary(null);
+    }
   }, [session, loadTransactions]);
 
   const income = summary?.totalPemasukan ?? 0;

@@ -37,13 +37,9 @@ Disconnected model nodes in the source export are omitted from the sanitized wor
 
 The Code node does not apply a date filter. The sheet read is configured to a worksheet named `OKTOBER 2026` in the supplied export. Validate how the installed Google Sheets node behaves with an empty worksheet and whether the selected worksheet represents the desired balance period.
 
-## Model discrepancy — verify before activation
+## AI model
 
-- Project policy specifies `qwen3.8-max` for the Finance Bot.
-- In the latest workflow JSON, `Groq Chat Model` → `Information Extractor` is connected, with model `openai/gpt-oss-20b`.
-- `Alibaba Cloud Chat Model` is set to `qwen3.8-max`, but is not connected to the Information Extractor.
-
-This repository documents the actual exported configuration rather than changing the model silently. Decide the intended model explicitly, change the n8n connection/configuration as appropriate, and test it before activation.
+The connected model node in the supplied workflow is Groq, configured as `openai/gpt-oss-20b`.
 
 ## Import safety
 

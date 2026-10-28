@@ -40,4 +40,31 @@ create policy "Users can delete their own transactions"
   on public.transactions for delete to authenticated
   using ((select auth.uid()) = user_id);
 
+-- Ringkasan dihitung di database agar tidak terpengaruh batas jumlah transaksi yang ditampilkan UI.
+-- SECURITY INVOKER mempertahankan hak akses pemanggil dan kebijakan RLS.
+create or replace function public.get_monthly_transaction_summary(p_month date)
+returns table (
+  total_pemasukan numeric,
+  total_pengeluaran numeric,
+  jumlah_transaksi bigint
+)
+language sql
+stable
+security invoker
+set search_path = public
+as $
+  select
+    coalesce(sum(t.jumlah) filter (where t.tipe = 'pemasukan'), 0) as total_pemasukan,
+    coalesce(sum(t.jumlah) filter (where t.tipe = 'pengeluaran'), 0) as total_pengeluaran,
+    count(*) as jumlah_transaksi
+  from public.transactions as t
+  where t.user_id = (select auth.uid())
+    and t.tanggal >= date_trunc('month', p_month)::date
+    and t.tanggal < (date_trunc('month', p_month) + interval '1 month')::date;
+$;
+
+revoke all on function public.get_monthly_transaction_summary(date) from public;
+revoke all on function public.get_monthly_transaction_summary(date) from anon;
+grant execute on function public.get_monthly_transaction_summary(date) to authenticated;
+
 -- Jangan menonaktifkan RLS dan jangan menaruh service_role key di frontend.

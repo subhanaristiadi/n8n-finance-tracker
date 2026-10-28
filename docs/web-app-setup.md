@@ -41,7 +41,8 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 - [ ] Pemasukan dapat disimpan.
 - [ ] Jumlah nol atau negatif ditolak oleh UI dan database.
 - [ ] Tipe dan kategori di luar closed list ditolak oleh database constraint.
-- [ ] Ringkasan bulanan menjumlahkan pemasukan dan pengeluaran dengan benar.
+- [ ] Ringkasan bulanan menjumlahkan pemasukan dan pengeluaran dengan benar, termasuk saat jumlah transaksi lebih dari 500.
+- [ ] RPC `get_monthly_transaction_summary` berhasil dipanggil oleh akun authenticated dan tidak mengembalikan transaksi akun lain.
 - [ ] Mengubah bulan memperbarui ringkasan dan riwayat.
 - [ ] Filter pemasukan/pengeluaran bekerja.
 - [ ] Pengguna dapat menghapus transaksinya sendiri setelah konfirmasi.
@@ -60,7 +61,7 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 
 ## Catatan implementasi
 
-- Dashboard mengambil maksimal 500 transaksi terbaru milik akun yang sedang login. Ringkasan bulanan dihitung dari hasil tersebut. Jika kebutuhan data tumbuh melampaui 500 transaksi, pindahkan agregasi ke query/view/RPC database atau paginasi agar total bulanan tetap akurat.
+- Riwayat menampilkan maksimal 500 transaksi terbaru untuk bulan yang dipilih. Total pemasukan, pengeluaran, dan jumlah transaksi dihitung melalui RPC `get_monthly_transaction_summary(date)` di PostgreSQL, sehingga total bulanan tidak dibatasi jumlah baris yang ditampilkan. Fungsi memakai `SECURITY INVOKER` dan tetap mengikuti RLS. Jalankan ulang seluruh `supabase/schema.sql` pada project yang sudah memiliki skema lama agar fungsi RPC tersedia.
 - Tanggal ditampilkan menggunakan tanggal kalender dari database; aplikasi belum memiliki dukungan multi-currency.
 - Input jumlah saat ini berupa bilangan bulat rupiah di UI, walaupun kolom database mendukung dua angka desimal.
 - Belum ada fitur edit transaksi, ekspor CSV, pencarian deskripsi, atau pengaturan anggaran.

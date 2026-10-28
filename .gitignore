@@ -1,0 +1,15 @@
+# Local workflow exports and secrets
+*.env
+.env
+.env.*
+!.env.example
+credentials.json
+service-account*.json
+*secret*
+*token*
+# Review raw exports before committing
+workflows/*raw*.json
+workflows/*original*.json
+.DS_Store
+Thumbs.db
+.vscode/

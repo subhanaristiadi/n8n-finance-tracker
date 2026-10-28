@@ -1,0 +1,391 @@
+{
+  "name": "Finance Tracker - Telegram (Sanitized)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "chatIds": "REPLACE_WITH_ALLOWED_TELEGRAM_CHAT_ID"
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        -80
+      ],
+      "id": "sanitizedNode1",
+      "name": "Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.message.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "tipe",
+              "description": "\"pemasukan\" jika masuk uang (gaji, transfer masuk, dll), \"pengeluaran\" jika keluar uang",
+              "required": true
+            },
+            {
+              "name": "jumlah",
+              "type": "number",
+              "description": "Angka saja (25000, 5000000, dst)",
+              "required": true
+            },
+            {
+              "name": "deskripsi",
+              "description": "Deskripsi singkat",
+              "required": true
+            },
+            {
+              "name": "kategori",
+              "description": "Kategori transaksi. Wajib memilih tepat satu dari 6 kategori berikut:\n\nMakanan = makanan atau minuman untuk dikonsumsi.\n\nTransport = kendaraan, bensin, parkir, servis kendaraan, perjalanan, atau biaya transportasi.\n\nBelanja = pembelian barang atau kebutuhan fisik yang bukan makanan dan bukan transportasi.\n\nTagihan = pembayaran listrik, air, internet, pulsa, cicilan, BPJS, subscription, atau layanan/kewajiban pembayaran lainnya.\n\nGaji = pemasukan yang berasal dari gaji atau penghasilan rutin pekerjaan.\n\nLainnya = transaksi yang tidak termasuk Makanan, Transport, Belanja, Tagihan, atau Gaji.\n\nJangan membuat kategori baru.\nGunakan penulisan kategori persis seperti daftar tersebut.",
+              "required": true
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "Kamu adalah AI yang bertugas mengekstrak dan mengklasifikasikan transaksi keuangan pribadi dari pesan pengguna.\n\nTUGAS UTAMA\n\nEkstrak informasi transaksi sesuai schema yang diberikan:\n- tipe\n- jumlah\n- deskripsi\n- kategori\n\nPahami konteks seluruh pesan sebelum menentukan nilai setiap field.\n\nATURAN TIPE\n\nGunakan:\n- \"pemasukan\" jika uang masuk atau diterima oleh pengguna.\n- \"pengeluaran\" jika uang dibayar, dibelanjakan, atau keluar dari pengguna.\n\nContoh pemasukan:\n- gaji masuk\n- menerima uang\n- uang dari mama\n- bonus diterima\n- transfer masuk\n\nContoh pengeluaran:\n- beli kopi\n- bayar listrik\n- isi bensin\n- belanja\n- transfer ke orang lain\n\nATURAN JUMLAH\n\n- Hasilkan angka saja tanpa simbol mata uang.\n- \"25rb\", \"25 ribu\" → 25000\n- \"150rb\", \"150 ribu\" → 150000\n- \"2jt\", \"2 juta\" → 2000000\n- \"1,5 juta\" → 1500000\n- Jangan mengubah nilai jumlah berdasarkan perkiraan yang tidak disebutkan pengguna.\n\nATURAN DESKRIPSI\n\n- Buat deskripsi singkat dan jelas.\n- Pertahankan maksud asli transaksi.\n- Jangan menambahkan informasi yang tidak disebutkan pengguna.\n- Gunakan kapitalisasi yang wajar.\n\nATURAN KATEGORI\n\nGunakan HANYA salah satu dari 6 kategori berikut:\n\n1. Makanan\n2. Transport\n3. Belanja\n4. Tagihan\n5. Gaji\n6. Lainnya\n\nJangan membuat kategori baru.\nJangan menggunakan kategori selain keenam kategori tersebut.\n\nDEFINISI KATEGORI\n\n1. MAKANAN\n\nGunakan untuk pengeluaran makanan atau minuman yang dikonsumsi.\n\nContoh:\n- makan\n- makan siang\n- makan malam\n- beli nasi\n- beli lauk\n- beli kopi\n- beli gorengan\n- beli soto\n- beli bakso\n- beli minuman\n- beli makanan di restoran\n- pesan makanan\n\nJika tujuan utama transaksi adalah membeli makanan atau minuman untuk dikonsumsi, gunakan Makanan.\n\n2. TRANSPORT\n\nGunakan untuk biaya yang berkaitan dengan kendaraan, perjalanan, atau transportasi.\n\nContoh:\n- beli bensin\n- isi bensin\n- parkir\n- bayar parkir\n- tiket transportasi\n- servis kendaraan\n- ganti oli\n- ganti lampu motor\n- isi angin ban\n- biaya kendaraan\n- biaya perjalanan\n\nJika transaksi berkaitan langsung dengan kendaraan atau perjalanan, gunakan Transport.\n\n3. BELANJA\n\nGunakan untuk membeli barang atau kebutuhan fisik yang bukan makanan dan bukan biaya transportasi.\n\nContoh:\n- beli baju\n- beli sepatu\n- beli tas\n- beli plastik\n- beli alat tulis\n- beli perlengkapan rumah\n- belanja di supermarket\n- belanja di minimarket\n- belanja di Shopee\n- membeli barang elektronik\n\nJika pengguna membeli barang, gunakan Belanja, kecuali barang tersebut jelas merupakan makanan/minuman atau biaya transportasi.\n\n4. TAGIHAN\n\nGunakan untuk pembayaran layanan, utilitas, langganan, atau kewajiban pembayaran.\n\nContoh:\n- bayar listrik\n- bayar air\n- bayar internet\n- bayar WiFi\n- bayar pulsa\n- bayar paket internet\n- bayar BPJS\n- bayar cicilan\n- bayar langganan\n- subscription\n- subscribe layanan digital\n\nJika transaksi merupakan pembayaran layanan atau kewajiban, gunakan Tagihan.\n\n5. GAJI\n\nGunakan HANYA untuk pemasukan yang berasal dari gaji atau penghasilan rutin pekerjaan.\n\nContoh:\n- gaji masuk\n- gajian\n- gaji bulan ini\n- menerima gaji\n- gaji Agustus\n\nJangan gunakan Gaji untuk bonus, hadiah, transfer dari keluarga, atau pemasukan lain yang bukan gaji.\n\n6. LAINNYA\n\nGunakan jika transaksi tidak termasuk Makanan, Transport, Belanja, Tagihan, atau Gaji.\n\nContoh:\n- sodaqoh\n- donasi\n- hadiah\n- transfer pribadi\n- biaya administrasi\n- bonus\n- uang dari keluarga\n- pemasukan lain\n- pengeluaran lain\n- transaksi yang kategorinya tidak jelas\n\nATURAN PRIORITAS KATEGORI\n\nJika sebuah transaksi terlihat dapat masuk ke beberapa kategori, gunakan aturan berikut:\n\n1. Makanan\n2. Transport\n3. Tagihan\n4. Gaji\n5. Belanja\n6. Lainnya\n\nNamun, selalu prioritaskan tujuan utama transaksi.\n\nContoh:\n- \"beli kopi\" → Makanan\n- \"beli bensin\" → Transport\n- \"bayar parkir\" → Transport\n- \"beli baju\" → Belanja\n- \"belanja di Indomaret\" → Belanja\n- \"bayar listrik\" → Tagihan\n- \"bayar paket internet\" → Tagihan\n- \"gaji masuk\" → Gaji\n- \"dapat bonus\" → Lainnya\n\nATURAN PENTING\n\n- Jangan memilih kategori hanya berdasarkan nama tempat.\n- Tentukan kategori berdasarkan tujuan transaksi.\n- \"Indomaret\", \"SuperTop\", \"Hypermart\", \"Shopee\", dan nama toko lainnya tidak otomatis berarti kategori tertentu.\n- Jika isi transaksi jelas menyebut makanan/minuman → Makanan.\n- Jika jelas menyebut kendaraan/perjalanan → Transport.\n- Jika jelas membeli barang → Belanja.\n- Jika jelas membayar layanan/tagihan → Tagihan.\n- Jika pemasukan jelas merupakan gaji → Gaji.\n- Jika tidak memenuhi kondisi di atas → Lainnya.\n\nOUTPUT\n\n- Ikuti schema yang diberikan.\n- Semua field yang required harus diisi.\n- Jangan menambahkan field lain.\n- Nilai kategori harus PERSIS salah satu dari:\n  Makanan\n  Transport\n  Belanja\n  Tagihan\n  Gaji\n  Lainnya\n- Jangan memberikan penjelasan atau komentar tambahan."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        -64
+      ],
+      "id": "sanitizedNode2",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ *Tercatat!*\n\n*Tipe*       : {{ $('Information Extractor').item.json.output.tipe }}\n*Jumlah*     : Rp{{ $('Information Extractor').item.json.output.jumlah.toLocaleString('id-ID') }}\n*Deskripsi*  : {{ $('Information Extractor').item.json.output.deskripsi }}\n*Kategori*   : {{ $('Information Extractor').item.json.output.kategori }}\n\n🔗 [Buka Google Sheet Catatan Keuangan](REPLACE_WITH_GOOGLE_SHEETS_URL)",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        -64
+      ],
+      "id": "sanitizedNode3",
+      "name": "Send a text message"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEETS_DOCUMENT_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_FINANCE_SPREADSHEET",
+          "cachedResultUrl": "REPLACE_WITH_GOOGLE_SHEETS_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "REPLACE_WITH_WORKSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_WORKSHEET",
+          "cachedResultUrl": "REPLACE_WITH_WORKSHEET_URL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tanggal": "={{ $now.setZone('Asia/Makassar').toFormat('yyyy-MM-dd HH:mm') }}",
+            "Tipe": "={{ $json.output.tipe }}",
+            "Jumlah": "={{ $json.output.jumlah }}",
+            "Deskripsi": "={{ $json.output.deskripsi }}",
+            "Kategori": "={{ $json.output.kategori }}",
+            "Saldo": "="
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jumlah",
+              "displayName": "Jumlah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deskripsi",
+              "displayName": "Deskripsi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Saldo",
+              "displayName": "Saldo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        480,
+        -64
+      ],
+      "id": "sanitizedNode4",
+      "name": "Append row in sheet"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        160,
+        96
+      ],
+      "id": "sanitizedNode5",
+      "name": "Groq Chat Model"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4e15c71d-5191-460a-9214-0ee9470cdb66",
+              "leftValue": "={{ ($json.message.text || '').trim().toLowerCase() }}",
+              "rightValue": "/saldo",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "80324249-accd-4e25-8610-50c51e5ef43a",
+              "leftValue": "={{ ($json.message.text || '').trim().toLowerCase() }}",
+              "rightValue": "/balance",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        -80
+      ],
+      "id": "sanitizedNode6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEETS_DOCUMENT_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_FINANCE_SPREADSHEET",
+          "cachedResultUrl": "REPLACE_WITH_GOOGLE_SHEETS_URL"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "REPLACE_WITH_WORKSHEET_ID",
+          "mode": "list",
+          "cachedResultName": "YOUR_WORKSHEET",
+          "cachedResultUrl": "REPLACE_WITH_WORKSHEET_URL"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        -240
+      ],
+      "id": "sanitizedNode7",
+      "name": "Get row(s) in sheet"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nlet totalPemasukan = 0;\nlet totalPengeluaran = 0;\n\nfor (const item of rows) {\n  const tipe = String(item.json.Tipe || '').trim().toLowerCase();\n  const jumlah = Number(item.json.Jumlah);\n\n  if (!Number.isFinite(jumlah)) {\n    continue;\n  }\n\n  if (tipe === 'pemasukan') {\n    totalPemasukan += jumlah;\n  } else if (tipe === 'pengeluaran') {\n    totalPengeluaran += jumlah;\n  }\n}\n\nconst saldo = totalPemasukan - totalPengeluaran;\n\nreturn [\n  {\n    json: {\n      totalPemasukan,\n      totalPengeluaran,\n      saldo\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -240
+      ],
+      "id": "sanitizedNode8",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{\n`💰 Saldo Keuangan\n\n📈 Pemasukan\nRp${Number($json.totalPemasukan).toLocaleString('id-ID')}\n\n📉 Pengeluaran\nRp${Number($json.totalPengeluaran).toLocaleString('id-ID')}\n\n━━━━━━━━━━━━━━\n\n💵 Saldo\nRp${Number($json.saldo).toLocaleString('id-ID')}`\n}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        -240
+      ],
+      "id": "sanitizedNode9",
+      "name": "Send a text message1"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "51iMjnLjbXlgLbEY",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "nodeGroups": []
+}

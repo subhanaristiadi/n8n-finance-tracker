@@ -23,6 +23,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [summary, setSummary] = useState<{ totalPemasukan: number; totalPengeluaran: number; jumlahTransaksi: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -64,31 +65,50 @@ export default function Home() {
     if (!supabase || !session?.user.id) return;
     setLoading(true);
     setError("");
-    const { data, error: queryError } = await supabase
-      .from("transactions")
-      .select("id,user_id,tanggal,tipe,jumlah,deskripsi,kategori,created_at")
-      .eq("user_id", session.user.id)
-      .order("tanggal", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(500);
-    if (queryError) setError(queryError.message);
-    else setTransactions((data ?? []) as Transaction[]);
+    const startDate = `${month}-01`;
+    const [rowsResult, summaryResult] = await Promise.all([
+      supabase
+        .from("transactions")
+        .select("id,user_id,tanggal,tipe,jumlah,deskripsi,kategori,created_at")
+        .eq("user_id", session.user.id)
+        .gte("tanggal", startDate)
+        .lt("tanggal", (() => {
+          const [year, monthNumber] = month.split("-").map(Number);
+          return `${monthNumber === 12 ? year + 1 : year}-${String(monthNumber === 12 ? 1 : monthNumber + 1).padStart(2, "0")}-01`;
+        })())
+        .order("tanggal", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(500),
+      supabase.rpc("get_monthly_transaction_summary", { p_month: startDate })
+    ]);
+    if (rowsResult.error) setError(rowsResult.error.message);
+    else setTransactions((rowsResult.data ?? []) as Transaction[]);
+    if (summaryResult.error) {
+      setSummary(null);
+      setError((current) => current || `Ringkasan bulanan gagal dimuat: ${summaryResult.error.message}`);
+    } else {
+      const row = Array.isArray(summaryResult.data) ? summaryResult.data[0] : null;
+      setSummary(row ? {
+        totalPemasukan: Number(row.total_pemasukan),
+        totalPengeluaran: Number(row.total_pengeluaran),
+        jumlahTransaksi: Number(row.jumlah_transaksi)
+      } : { totalPemasukan: 0, totalPengeluaran: 0, jumlahTransaksi: 0 });
+    }
     setLoading(false);
-  }, [session?.user.id]);
+  }, [session?.user.id, month]);
 
   useEffect(() => {
     if (session) void loadTransactions();
     else setTransactions([]);
   }, [session, loadTransactions]);
 
-  const monthly = useMemo(
-    () => transactions.filter((item) => item.tanggal.slice(0, 7) === month),
-    [transactions, month]
-  );
-  const income = monthly.reduce((sum, item) => sum + (item.tipe === "pemasukan" ? Number(item.jumlah) : 0), 0);
-  const expense = monthly.reduce((sum, item) => sum + (item.tipe === "pengeluaran" ? Number(item.jumlah) : 0), 0);
+  const income = summary?.totalPemasukan ?? 0;
+  const expense = summary?.totalPengeluaran ?? 0;
   const balance = income - expense;
-  const visibleTransactions = monthly.filter((item) => typeFilter === "semua" || item.tipe === typeFilter);
+  const visibleTransactions = useMemo(
+    () => transactions.filter((item) => typeFilter === "semua" || item.tipe === typeFilter),
+    [transactions, typeFilter]
+  );
 
   async function handleAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -258,7 +278,7 @@ export default function Home() {
 
             <article className="panel transactions-panel">
               <div className="panel-heading transaction-heading">
-                <div><h2>Riwayat transaksi</h2><p>{visibleTransactions.length} transaksi pada periode terpilih</p></div>
+                <div><h2>Riwayat transaksi</h2><p>{summary?.jumlahTransaksi ?? visibleTransactions.length} transaksi pada periode terpilih</p></div>
                 <button className="icon-button refresh-button" onClick={() => void loadTransactions()} disabled={loading} title="Muat ulang" aria-label="Muat ulang"><RefreshCw size={17} className={loading ? "spin" : ""} /></button>
               </div>
               <div className="filters">

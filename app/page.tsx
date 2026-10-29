@@ -51,6 +51,7 @@ export default function Home() {
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [month, setMonth] = useState(today().slice(0, 7));
@@ -180,6 +181,47 @@ export default function Home() {
       ),
     [transactions, typeFilter]
   );
+
+  async function loadExportTransactions(): Promise<Transaction[] | null> {
+    if (!supabase || !session?.user.id) return null;
+
+    setExporting(true);
+    setError("");
+
+    const startDate = `${month}-01`;
+    const [year, monthNumber] = month.split("-").map(Number);
+    const endDate = `${monthNumber === 12 ? year + 1 : year}-${String(monthNumber === 12 ? 1 : monthNumber + 1).padStart(2, "0")}-01`;
+    const pageSize = 1000;
+    const allRows: Transaction[] = [];
+
+    try {
+      for (let offset = 0; ; offset += pageSize) {
+        const { data, error: queryError } = await supabase
+          .from("transactions")
+          .select("id,user_id,tanggal,tipe,jumlah,deskripsi,kategori,created_at")
+          .eq("user_id", session.user.id)
+          .gte("tanggal", startDate)
+          .lt("tanggal", endDate)
+          .order("tanggal", { ascending: false })
+          .order("created_at", { ascending: false })
+          .range(offset, offset + pageSize - 1);
+
+        if (queryError) {
+          setError(`Gagal memuat transaksi untuk laporan: ${queryError.message}`);
+          return null;
+        }
+
+        const rows = (data ?? []) as Transaction[];
+        allRows.push(...rows);
+
+        if (rows.length < pageSize) break;
+      }
+
+      return allRows;
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function handleAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -477,6 +519,8 @@ export default function Home() {
               income={income}
               expense={expense}
               balance={balance}
+              loadTransactions={loadExportTransactions}
+              exporting={exporting}
             />
           </section>
 

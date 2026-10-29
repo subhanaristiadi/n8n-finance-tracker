@@ -147,7 +147,18 @@ function createXlsx(files: { name: string; content: string }[]): Blob {
   write32(endView, 16, localOffset);
   write16(endView, 20, 0);
 
-  return new Blob([...localParts, ...centralParts, end], {
+  // Concatenate into one owned ArrayBuffer so BlobPart stays compatible with
+  // TypeScript's stricter ArrayBuffer typing.
+  const parts = [...localParts, ...centralParts, end];
+  const totalSize = parts.reduce((sum, part) => sum + part.length, 0);
+  const output = new Uint8Array(totalSize);
+  let offset = 0;
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.length;
+  }
+
+  return new Blob([output.buffer as ArrayBuffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
 }

@@ -1,12 +1,15 @@
 "use client";
 
 import { Download } from "lucide-react";
+import { Transaction } from "@/lib/types";
 
 type MonthlySummaryExportProps = {
   month: string;
   income: number;
   expense: number;
   balance: number;
+  loadTransactions: () => Promise<Transaction[] | null>;
+  exporting: boolean;
 };
 
 const monthFormatter = new Intl.DateTimeFormat("id-ID", {
@@ -25,19 +28,34 @@ export default function MonthlySummaryExport({
   income,
   expense,
   balance,
+  loadTransactions,
+  exporting,
 }: MonthlySummaryExportProps) {
-  function downloadCsv() {
+  async function downloadCsv() {
+    const transactions = await loadTransactions();
+    if (!transactions) return;
+
     const [year, monthNumber] = month.split("-").map(Number);
     const monthDate = new Date(Date.UTC(year, monthNumber - 1, 1));
     const monthLabel = monthFormatter.format(monthDate);
-    const rows = [
+    const rows: (string | number)[][] = [
       ["Laporan Keuangan Bulanan"],
       ["Bulan", monthLabel],
       [],
-      ["Ringkasan", "Jumlah (Rp)"],
+      ["RINGKASAN", "Jumlah (Rp)"],
       ["Total pemasukan", income],
       ["Total pengeluaran", expense],
       ["Saldo bersih", balance],
+      [],
+      ["DAFTAR TRANSAKSI"],
+      ["Tanggal", "Tipe", "Jumlah (Rp)", "Deskripsi", "Kategori"],
+      ...transactions.map((item) => [
+        item.tanggal,
+        item.tipe,
+        Number(item.jumlah),
+        item.deskripsi,
+        item.kategori,
+      ]),
     ];
 
     const csv = "\uFEFF" + rows
@@ -56,9 +74,14 @@ export default function MonthlySummaryExport({
   }
 
   return (
-    <button className="export-button" type="button" onClick={downloadCsv}>
+    <button
+      className="export-button"
+      type="button"
+      onClick={() => void downloadCsv()}
+      disabled={exporting}
+    >
       <Download size={16} />
-      Unduh ringkasan CSV
+      {exporting ? "Menyiapkan laporan…" : "Unduh laporan CSV"}
     </button>
   );
 }

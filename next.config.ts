@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
-  poweredByHeader: false
+  poweredByHeader: false,
+  outputFileTracingRoot: path.resolve("."),
 };
 
 export default nextConfig;

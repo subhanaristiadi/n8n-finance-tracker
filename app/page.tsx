@@ -23,6 +23,7 @@ import {
   TransactionType,
 } from "@/lib/types";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import MonthlySummaryExport from "./monthly-summary-export";
 
 const currency = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -471,6 +472,12 @@ export default function Home() {
                 aria-label="Pilih bulan"
               />
             </label>
+            <MonthlySummaryExport
+              month={month}
+              income={income}
+              expense={expense}
+              balance={balance}
+            />
           </section>
 
           <section className="summary-grid">

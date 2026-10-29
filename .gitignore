@@ -13,3 +13,12 @@ workflows/*original*.json
 .DS_Store
 Thumbs.db
 .vscode/
+# Next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# Dependencies
+node_modules/
+.vercel

@@ -48,6 +48,9 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 - [ ] Pengguna dapat menghapus transaksinya sendiri setelah konfirmasi.
 - [ ] Akun A tidak dapat membaca, mengubah, atau menghapus data akun B melalui API Supabase.
 - [ ] Setelah logout lalu login kembali, data akun yang benar dimuat.
+- [ ] Unduh laporan Excel (`.xlsx`) untuk bulan terpilih dan pastikan file dapat dibuka.
+- [ ] Unduh laporan CSV (`.csv`) untuk bulan terpilih dan pastikan karakter Indonesia, koma, serta tanda kutip pada deskripsi terbaca benar.
+- [ ] Pastikan kedua file memuat ringkasan dan seluruh transaksi bulan terpilih, termasuk ketika jumlah transaksi lebih dari 500.
 - [ ] Aplikasi tetap usable pada ukuran layar ponsel.
 - [ ] `npm run build` berhasil sebelum deployment.
 
@@ -64,5 +67,6 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 - Riwayat menampilkan maksimal 500 transaksi terbaru untuk bulan yang dipilih. Total pemasukan, pengeluaran, dan jumlah transaksi dihitung melalui RPC `get_monthly_transaction_summary(date)` di PostgreSQL, sehingga total bulanan tidak dibatasi jumlah baris yang ditampilkan. Fungsi memakai `SECURITY INVOKER` dan tetap mengikuti RLS. Jalankan ulang seluruh `supabase/schema.sql` pada project yang sudah memiliki skema lama agar fungsi RPC tersedia.
 - Tanggal ditampilkan menggunakan tanggal kalender dari database; aplikasi belum memiliki dukungan multi-currency.
 - Input jumlah saat ini berupa bilangan bulat rupiah di UI, walaupun kolom database mendukung dua angka desimal.
-- Belum ada fitur edit transaksi, ekspor CSV, pencarian deskripsi, atau pengaturan anggaran.
+- Belum ada fitur edit transaksi, pencarian deskripsi, atau pengaturan anggaran.
+- Ekspor laporan tersedia dalam format `.xlsx` dan `.csv`. Ekspor menggunakan identitas pengguna yang sedang login dan rentang tanggal bulan terpilih. Uji kedua format secara manual pada file hasil unduhan.
 - Source sudah ditambahkan ke repository, tetapi build dan uji integrasi perlu dijalankan setelah clone pada environment yang memiliki Node.js dan project Supabase.

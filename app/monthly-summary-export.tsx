@@ -14,6 +14,32 @@ type MonthlySummaryExportProps = {
 
 type CellValue = string | number;
 
+function csvEscape(value: CellValue): string {
+  let text = String(value ?? "");
+  // Prevent spreadsheet formula execution from user-entered text fields.
+  if (typeof value === "string" && /^[\\s]*[=+@\\-]/.test(text)) {
+    text = `'${text}`;
+  }
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function createCsv(rows: CellValue[][]): Blob {
+  const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\\r\\n");
+  return new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 const monthFormatter = new Intl.DateTimeFormat("id-ID", {
   month: "long",
   year: "numeric",
@@ -171,14 +197,12 @@ export default function MonthlySummaryExport({
   loadTransactions,
   exporting,
 }: MonthlySummaryExportProps) {
-  async function downloadXlsx() {
-    const transactions = await loadTransactions();
-    if (!transactions) return;
-
+  function buildReportRows(transactions: Transaction[]): CellValue[][] {
     const [year, monthNumber] = month.split("-").map(Number);
     const monthDate = new Date(Date.UTC(year, monthNumber - 1, 1));
     const monthLabel = monthFormatter.format(monthDate);
-    const rows: CellValue[][] = [
+
+    return [
       ["Laporan Keuangan Bulanan"],
       ["Bulan", monthLabel],
       [],
@@ -197,7 +221,13 @@ export default function MonthlySummaryExport({
         item.kategori,
       ]),
     ];
+  }
 
+  async function downloadXlsx() {
+    const transactions = await loadTransactions();
+    if (!transactions) return;
+
+    const rows = buildReportRows(transactions);
     const workbookFiles = [
       {
         name: "[Content_Types].xml",
@@ -236,27 +266,29 @@ export default function MonthlySummaryExport({
       },
     ];
 
-    const blob = createXlsx(workbookFiles);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `laporan-keuangan-${month}.xlsx`;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBlob(createXlsx(workbookFiles), `laporan-keuangan-${month}.xlsx`);
+  }
+
+  async function downloadCsv() {
+    const transactions = await loadTransactions();
+    if (!transactions) return;
+
+    downloadBlob(
+      createCsv(buildReportRows(transactions)),
+      `laporan-keuangan-${month}.csv`,
+    );
   }
 
   return (
-    <button
-      className="export-button"
-      type="button"
-      onClick={() => void downloadXlsx()}
-      disabled={exporting}
-    >
-      <Download size={16} />
-      {exporting ? "Menyiapkan laporan…" : "Unduh laporan Excel"}
-    </button>
+    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+      <button className="export-button" type="button" onClick={() => void downloadXlsx()} disabled={exporting}>
+        <Download size={16} />
+        Unduh Excel
+      </button>
+      <button className="export-button" type="button" onClick={() => void downloadCsv()} disabled={exporting}>
+        <Download size={16} />
+        Unduh CSV
+      </button>
+    </div>
   );
 }

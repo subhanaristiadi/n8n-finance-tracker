@@ -9,6 +9,7 @@ Aplikasi web pencatatan pemasukan dan pengeluaran pribadi menggunakan **Next.js,
 - Kategori tertutup: `Makanan`, `Transport`, `Belanja`, `Tagihan`, `Gaji`, `Lainnya`.
 - Ringkasan pemasukan, pengeluaran, dan selisih bersih per bulan.
 - Riwayat transaksi dengan filter tipe, serta penghapusan transaksi.
+- Ekspor laporan bulanan ke Excel (`.xlsx`) atau CSV (`.csv`), mencakup ringkasan dan seluruh transaksi pada bulan terpilih.
 - Row Level Security (RLS) agar pengguna hanya dapat membaca dan mengelola transaksinya sendiri.
 - Layout responsif untuk desktop dan ponsel.
 
@@ -55,7 +56,7 @@ Persyaratan: Node.js versi LTS yang kompatibel dengan Next.js dan akun Supabase.
 2. Tambahkan `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` pada Environment Variables Vercel untuk environment yang digunakan.
 3. Deploy. Setelah perubahan environment variables, lakukan redeploy.
 4. Pada Supabase Auth URL Configuration, atur Site URL ke domain deployment dan tambahkan URL callback/redirect yang sesuai bila diperlukan.
-5. Uji daftar akun, login, simpan transaksi, filter bulan, hapus transaksi, dan akses dari perangkat/browser lain.
+5. Uji daftar akun, login, simpan transaksi, filter bulan, hapus transaksi, unduh laporan Excel/CSV, dan akses dari perangkat/browser lain.
 
 ## Skema database
 
@@ -95,4 +96,4 @@ Folder `workflows/` dan dokumentasi n8n lama dipertahankan sebagai referensi pro
 
 ## Status verifikasi
 
-Kode sumber sudah ditambahkan ke repository, tetapi belum dapat dianggap production-ready sebelum dependency install/build, konfigurasi Supabase, dan uji end-to-end dilakukan pada environment yang memiliki akses ke project Supabase. Lihat [panduan setup dan testing](docs/web-app-setup.md).
+Fitur ekspor laporan bulanan tersedia melalui dua tombol: Excel (`.xlsx`) dan CSV (`.csv`). Kedua format memuat ringkasan pemasukan, pengeluaran, saldo bersih, serta seluruh transaksi milik pengguna pada bulan yang dipilih. Pengambilan data ekspor menggunakan pagination agar tidak berhenti pada batas 500 baris yang digunakan untuk tampilan riwayat. Tetap lakukan build dan pengujian unduhan pada environment deployment sebelum merilis perubahan. Lihat [panduan setup dan testing](docs/web-app-setup.md).

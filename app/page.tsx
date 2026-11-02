@@ -52,6 +52,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [openingBalance, setOpeningBalance] = useState(0);
+  const [openingBalanceInput, setOpeningBalanceInput] = useState("0");
+  const [loadingOpeningBalance, setLoadingOpeningBalance] = useState(false);
+  const [savingOpeningBalance, setSavingOpeningBalance] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [month, setMonth] = useState(today().slice(0, 7));
@@ -172,7 +176,110 @@ export default function Home() {
 
   const income = summary?.totalPemasukan ?? 0;
   const expense = summary?.totalPengeluaran ?? 0;
-  const balance = income - expense;
+  const balance = openingBalance + income - expense;
+
+  useEffect(() => {
+    if (!supabase || !session?.user.id) return;
+
+    let active = true;
+    const loadOpeningBalance = async () => {
+      setLoadingOpeningBalance(true);
+      const { data, error: queryError } = await supabase
+        .from("monthly_balances")
+        .select("opening_balance")
+        .eq("user_id", session.user.id)
+        .eq("month", `${month}-01`)
+        .maybeSingle();
+
+      if (!active) return;
+      if (queryError) {
+        setError(`Gagal memuat saldo awal: ${queryError.message}`);
+      } else {
+        const amount = data ? Number(data.opening_balance) : 0;
+        setOpeningBalance(amount);
+        setOpeningBalanceInput(String(amount));
+      }
+      setLoadingOpeningBalance(false);
+    };
+
+    void loadOpeningBalance();
+    return () => { active = false; };
+  }, [session?.user.id, month]);
+
+  async function saveOpeningBalance(value: number): Promise<boolean> {
+    if (!supabase || !session?.user.id) return false;
+    const { error: saveError } = await supabase
+      .from("monthly_balances")
+      .upsert(
+        { user_id: session.user.id, month: `${month}-01`, opening_balance: value },
+        { onConflict: "user_id,month" }
+      );
+
+    if (saveError) {
+      setError(`Gagal menyimpan saldo awal: ${saveError.message}`);
+      return false;
+    }
+    setOpeningBalance(value);
+    setOpeningBalanceInput(String(value));
+    return true;
+  }
+
+  async function handleSaveOpeningBalance() {
+    const amount = Number(openingBalanceInput);
+    if (!Number.isFinite(amount)) {
+      setError("Saldo awal harus berupa angka yang valid.");
+      return;
+    }
+
+    setSavingOpeningBalance(true);
+    setError("");
+    setMessage("");
+    const saved = await saveOpeningBalance(amount);
+    if (saved) setMessage("Saldo awal berhasil disimpan.");
+    setSavingOpeningBalance(false);
+  }
+
+  async function handleImportPreviousClosingBalance() {
+    if (!supabase || !session?.user.id) return;
+
+    const [year, monthNumber] = month.split("-").map(Number);
+    const previousDate = new Date(Date.UTC(year, monthNumber - 2, 1));
+    const previousMonth = `${previousDate.getUTCFullYear()}-${String(previousDate.getUTCMonth() + 1).padStart(2, "0")}`;
+    const previousMonthStart = `${previousMonth}-01`;
+
+    setSavingOpeningBalance(true);
+    setError("");
+    setMessage("");
+
+    const [{ data: previousOpeningRow, error: openingError }, { data: previousSummary, error: summaryError }] =
+      await Promise.all([
+        supabase
+          .from("monthly_balances")
+          .select("opening_balance")
+          .eq("user_id", session.user.id)
+          .eq("month", previousMonthStart)
+          .maybeSingle(),
+        supabase.rpc("get_monthly_transaction_summary", { p_month: previousMonthStart }),
+      ]);
+
+    if (openingError || summaryError) {
+      setError(`Gagal mengambil saldo akhir bulan sebelumnya: ${openingError?.message ?? summaryError?.message}`);
+      setSavingOpeningBalance(false);
+      return;
+    }
+
+    const previousSummaryRow = Array.isArray(previousSummary) ? previousSummary[0] : null;
+    const previousOpening = previousOpeningRow ? Number(previousOpeningRow.opening_balance) : 0;
+    const previousIncome = Number(previousSummaryRow?.total_pemasukan ?? 0);
+    const previousExpense = Number(previousSummaryRow?.total_pengeluaran ?? 0);
+    const previousClosing = previousOpening + previousIncome - previousExpense;
+
+    const saved = await saveOpeningBalance(previousClosing);
+    if (saved) {
+      setMessage(`Saldo akhir ${previousMonth} berhasil diambil sebagai saldo awal ${month}.`);
+    }
+    setSavingOpeningBalance(false);
+  }
 
   const visibleTransactions = useMemo(
     () =>
@@ -518,6 +625,7 @@ export default function Home() {
               month={month}
               income={income}
               expense={expense}
+              openingBalance={openingBalance}
               balance={balance}
               loadTransactions={loadExportTransactions}
               exporting={exporting}
@@ -525,6 +633,31 @@ export default function Home() {
           </section>
 
           <section className="summary-grid">
+            <article className="summary-card opening-balance-card">
+              <div className="summary-label">
+                Saldo awal
+                <span className="metric-icon net"><Wallet size={18} /></span>
+              </div>
+              <input
+                className="opening-balance-input"
+                type="number"
+                step="1"
+                value={openingBalanceInput}
+                onChange={(event) => setOpeningBalanceInput(event.target.value)}
+                aria-label="Saldo awal bulan"
+                disabled={loadingOpeningBalance || savingOpeningBalance}
+              />
+              <div className="opening-balance-actions">
+                <button type="button" className="export-button" onClick={() => void handleSaveOpeningBalance()} disabled={loadingOpeningBalance || savingOpeningBalance}>
+                  Simpan saldo awal
+                </button>
+                <button type="button" className="export-button" onClick={() => void handleImportPreviousClosingBalance()} disabled={loadingOpeningBalance || savingOpeningBalance}>
+                  Ambil saldo bulan lalu
+                </button>
+              </div>
+              <small>{loadingOpeningBalance ? "Memuat saldo awal…" : "Bisa diisi manual atau diambil dari saldo akhir bulan sebelumnya."}</small>
+            </article>
+
             <article className="summary-card">
               <div className="summary-label">
                 Total pemasukan
@@ -549,13 +682,13 @@ export default function Home() {
 
             <article className="summary-card balance-card">
               <div className="summary-label">
-                Selisih bersih
+                Saldo akhir
                 <span className="metric-icon net">
                   <Wallet size={18} />
                 </span>
               </div>
               <strong>{currency.format(balance)}</strong>
-              <small>Pemasukan dikurangi pengeluaran</small>
+              <small>Saldo awal + pemasukan - pengeluaran</small>
             </article>
           </section>
 

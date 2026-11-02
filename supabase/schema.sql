@@ -55,6 +55,12 @@ create policy "Users can delete their own monthly balances"
   on public.monthly_balances for delete to authenticated
   using ((select auth.uid()) = user_id);
 
+-- Berikan privilege tabel kepada pengguna yang sudah login.
+-- RLS tetap membatasi akses hanya ke baris milik pengguna tersebut.
+grant select, insert, update, delete
+  on table public.monthly_balances
+  to authenticated;
+
 alter table public.transactions enable row level security;
 
 drop policy if exists "Users can read their own transactions" on public.transactions;

@@ -17,6 +17,44 @@ create table if not exists public.transactions (
 create index if not exists transactions_user_date_idx
   on public.transactions (user_id, tanggal desc, created_at desc);
 
+-- Saldo awal disimpan per pengguna dan per bulan.
+-- Saldo akhir dihitung oleh aplikasi: saldo awal + pemasukan - pengeluaran.
+create table if not exists public.monthly_balances (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  month date not null check (extract(day from month) = 1),
+  opening_balance numeric(14,2) not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, month)
+);
+
+create index if not exists monthly_balances_user_month_idx
+  on public.monthly_balances (user_id, month desc);
+
+alter table public.monthly_balances enable row level security;
+
+drop policy if exists "Users can read their own monthly balances" on public.monthly_balances;
+create policy "Users can read their own monthly balances"
+  on public.monthly_balances for select to authenticated
+  using ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can insert their own monthly balances" on public.monthly_balances;
+create policy "Users can insert their own monthly balances"
+  on public.monthly_balances for insert to authenticated
+  with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own monthly balances" on public.monthly_balances;
+create policy "Users can update their own monthly balances"
+  on public.monthly_balances for update to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can delete their own monthly balances" on public.monthly_balances;
+create policy "Users can delete their own monthly balances"
+  on public.monthly_balances for delete to authenticated
+  using ((select auth.uid()) = user_id);
+
 alter table public.transactions enable row level security;
 
 drop policy if exists "Users can read their own transactions" on public.transactions;

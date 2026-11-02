@@ -5,6 +5,7 @@ import { Transaction } from "@/lib/types";
 
 type MonthlySummaryExportProps = {
   month: string;
+  openingBalance: number;
   income: number;
   expense: number;
   balance: number;
@@ -191,6 +192,7 @@ function createXlsx(files: { name: string; content: string }[]): Blob {
 
 export default function MonthlySummaryExport({
   month,
+  openingBalance,
   income,
   expense,
   balance,
@@ -207,9 +209,10 @@ export default function MonthlySummaryExport({
       ["Bulan", monthLabel],
       [],
       ["RINGKASAN", "Jumlah (Rp)"],
+      ["Saldo awal", openingBalance],
       ["Total pemasukan", income],
       ["Total pengeluaran", expense],
-      ["Saldo bersih", balance],
+      ["Saldo akhir", balance],
       [],
       ["DAFTAR TRANSAKSI"],
       ["Tanggal", "Tipe", "Jumlah (Rp)", "Deskripsi", "Kategori"],

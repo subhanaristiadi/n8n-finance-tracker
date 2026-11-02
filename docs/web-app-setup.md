@@ -43,7 +43,12 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 - [ ] Tipe dan kategori di luar closed list ditolak oleh database constraint.
 - [ ] Ringkasan bulanan menjumlahkan pemasukan dan pengeluaran dengan benar, termasuk saat jumlah transaksi lebih dari 500.
 - [ ] RPC `get_monthly_transaction_summary` berhasil dipanggil oleh akun authenticated dan tidak mengembalikan transaksi akun lain.
-- [ ] Mengubah bulan memperbarui ringkasan dan riwayat.
+- [ ] Mengubah bulan memperbarui ringkasan, riwayat, dan saldo awal bulan tersebut.
+- [ ] Saldo awal dapat diisi manual dan disimpan, lalu tetap tersedia setelah refresh/login ulang.
+- [ ] Tombol ambil saldo bulan lalu menghitung saldo akhir bulan sebelumnya (saldo awal + pemasukan - pengeluaran) dan menyimpannya sebagai saldo awal bulan aktif.
+- [ ] Saldo akhir sama dengan saldo awal + total pemasukan - total pengeluaran.
+- [ ] Bulan pertama tanpa saldo awal tersimpan menggunakan saldo awal Rp0 sampai pengguna mengisinya.
+- [ ] Saldo awal dan saldo akhir tercantum pada ekspor Excel dan CSV.
 - [ ] Filter pemasukan/pengeluaran bekerja.
 - [ ] Pengguna dapat menghapus transaksinya sendiri setelah konfirmasi.
 - [ ] Akun A tidak dapat membaca, mengubah, atau menghapus data akun B melalui API Supabase.
@@ -62,6 +67,8 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 ## Catatan implementasi
 
 - Riwayat menampilkan maksimal 500 transaksi terbaru untuk bulan yang dipilih. Total pemasukan, pengeluaran, dan jumlah transaksi dihitung melalui RPC `get_monthly_transaction_summary(date)` di PostgreSQL, sehingga total bulanan tidak dibatasi jumlah baris yang ditampilkan. Fungsi memakai `SECURITY INVOKER` dan tetap mengikuti RLS. Jalankan ulang seluruh `supabase/schema.sql` pada project yang sudah memiliki skema lama agar fungsi RPC tersedia.
+- Tabel `monthly_balances` menyimpan `opening_balance` per `user_id` dan bulan (tanggal hari pertama bulan). Terapkan perubahan `supabase/schema.sql` pada project Supabase yang sudah ada sebelum menguji fitur saldo.
+- Saldo akhir dihitung di aplikasi dari saldo awal + total pemasukan - total pengeluaran; tidak disimpan sebagai angka terpisah. Tombol ambil bulan sebelumnya menghitung saldo akhir bulan kalender sebelumnya lalu menyimpannya sebagai saldo awal bulan aktif.
 - Tanggal ditampilkan menggunakan tanggal kalender dari database; aplikasi belum memiliki dukungan multi-currency.
 - Input jumlah saat ini berupa bilangan bulat rupiah di UI, walaupun kolom database mendukung dua angka desimal.
 - Belum ada fitur edit transaksi, ekspor CSV, pencarian deskripsi, atau pengaturan anggaran.

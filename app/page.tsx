@@ -180,13 +180,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!supabase || !session?.user.id) return;
+    const client = supabase;
 
     let active = true;
     const loadOpeningBalance = async () => {
       setOpeningBalance(0);
       setOpeningBalanceInput("0");
       setLoadingOpeningBalance(true);
-      const { data, error: queryError } = await supabase
+      const { data, error: queryError } = await client
         .from("monthly_balances")
         .select("opening_balance")
         .eq("user_id", session.user.id)

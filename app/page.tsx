@@ -183,6 +183,8 @@ export default function Home() {
 
     let active = true;
     const loadOpeningBalance = async () => {
+      setOpeningBalance(0);
+      setOpeningBalanceInput("0");
       setLoadingOpeningBalance(true);
       const { data, error: queryError } = await supabase
         .from("monthly_balances")

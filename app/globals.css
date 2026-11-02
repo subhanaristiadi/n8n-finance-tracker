@@ -51,6 +51,9 @@ h1, h2, strong { font-family: 'Manrope', sans-serif; }
 .metric-icon.net { color: #6b5ac8; background: #f0edff; }
 .summary-card > strong { display: block; margin-top: 15px; font-size: clamp(20px, 2.5vw, 28px); letter-spacing: -.8px; overflow-wrap: anywhere; }
 .summary-card > small { display: block; margin-top: 7px; color: #929baa; font-size: 11px; }
+.opening-balance-input { display: block; width: 100%; min-height: 42px; margin-top: 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); background: #fff; font-size: 19px; font-weight: 700; }
+.opening-balance-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.opening-balance-actions .export-button { flex: 1 1 auto; min-height: 36px; padding: 8px 10px; font-size: 11px; }
 .content-grid { display: grid; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.6fr); align-items: start; gap: 18px; margin-top: 22px; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 17px; padding: 23px; box-shadow: var(--shadow); min-width: 0; }
 .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 22px; }

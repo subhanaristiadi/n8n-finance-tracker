@@ -15,20 +15,6 @@ type MonthlySummaryExportProps = {
 
 type CellValue = string | number;
 
-function csvEscape(value: CellValue): string {
-  let text = String(value ?? "");
-  // Prevent spreadsheet formula execution from user-entered text fields.
-  if (typeof value === "string" && /^[\\s]*[=+@\\-]/.test(text)) {
-    text = `'${text}`;
-  }
-  return `"${text.replace(/"/g, '""')}"`;
-}
-
-function createCsv(rows: CellValue[][]): Blob {
-  const csv = rows.map((row) => row.map(csvEscape).join(",")).join("\\r\\n");
-  return new Blob(["\\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
-}
-
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -272,25 +258,11 @@ export default function MonthlySummaryExport({
     downloadBlob(createXlsx(workbookFiles), `laporan-keuangan-${month}.xlsx`);
   }
 
-  async function downloadCsv() {
-    const transactions = await loadTransactions();
-    if (!transactions) return;
-
-    downloadBlob(
-      createCsv(buildReportRows(transactions)),
-      `laporan-keuangan-${month}.csv`,
-    );
-  }
-
   return (
     <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
       <button className="export-button" type="button" onClick={() => void downloadXlsx()} disabled={exporting}>
         <Download size={16} />
         Unduh Excel
-      </button>
-      <button className="export-button" type="button" onClick={() => void downloadCsv()} disabled={exporting}>
-        <Download size={16} />
-        Unduh CSV
       </button>
     </div>
   );

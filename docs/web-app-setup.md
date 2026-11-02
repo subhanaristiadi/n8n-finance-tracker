@@ -48,7 +48,7 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 - [ ] Tombol ambil saldo bulan lalu menghitung saldo akhir bulan sebelumnya (saldo awal + pemasukan - pengeluaran) dan menyimpannya sebagai saldo awal bulan aktif.
 - [ ] Saldo akhir sama dengan saldo awal + total pemasukan - total pengeluaran.
 - [ ] Bulan pertama tanpa saldo awal tersimpan menggunakan saldo awal Rp0 sampai pengguna mengisinya.
-- [ ] Saldo awal dan saldo akhir tercantum pada ekspor Excel dan CSV.
+- [ ] Saldo awal dan saldo akhir tercantum pada ekspor Excel (`.xlsx`).
 - [ ] Filter pemasukan/pengeluaran bekerja.
 - [ ] Pengguna dapat menghapus transaksinya sendiri setelah konfirmasi.
 - [ ] Akun A tidak dapat membaca, mengubah, atau menghapus data akun B melalui API Supabase.

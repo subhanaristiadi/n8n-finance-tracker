@@ -42,7 +42,7 @@ h1, h2, strong { font-family: 'Manrope', sans-serif; }
 .export-button:hover { border-color: #b8d6cc; background: #f6fbf8; }
 .export-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @media (max-width: 640px) { .export-button { width: 100%; } }
-.summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 17px; }
+.summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 17px; }
 .summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 17px; padding: 22px 23px; box-shadow: var(--shadow); min-width: 0; }
 .summary-label { display: flex; align-items: center; justify-content: space-between; color: #687588; font-size: 12px; font-weight: 600; }
 .metric-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; }
@@ -122,6 +122,7 @@ h1, h2, strong { font-family: 'Manrope', sans-serif; }
 code { background: #f1f4f7; padding: 2px 5px; border-radius: 4px; font-size: 11px; color: #334155; overflow-wrap: anywhere; }
 .security-note { border-left: 3px solid #e5a93d; padding: 9px 12px; background: #fff9eb; border-radius: 0 8px 8px 0; }
 @media (max-width: 850px) {
+  .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .app-shell { padding: 0 20px 24px; }
   .content-grid { grid-template-columns: minmax(0, 1fr); }
   .auth-layout { grid-template-columns: 1fr; gap: 28px; max-width: 540px; padding-top: 40px; }

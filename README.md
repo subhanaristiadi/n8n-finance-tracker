@@ -10,6 +10,7 @@ Aplikasi web pencatatan pemasukan dan pengeluaran pribadi menggunakan **Next.js,
 - Saldo awal bulanan yang dapat diisi manual atau diambil dari saldo akhir bulan sebelumnya.
 - Saldo akhir bulanan dihitung dari saldo awal + pemasukan - pengeluaran.
 - Riwayat transaksi dengan filter tipe, serta penghapusan transaksi.
+- Ekspor laporan keuangan bulanan dalam format Excel (`.xlsx`).
 - Row Level Security (RLS) agar pengguna hanya dapat membaca dan mengelola transaksinya sendiri.
 - Layout responsif untuk desktop dan ponsel.
 
@@ -56,7 +57,7 @@ Persyaratan: Node.js versi LTS yang kompatibel dengan Next.js dan akun Supabase.
 2. Tambahkan `NEXT_PUBLIC_SUPABASE_URL` dan `NEXT_PUBLIC_SUPABASE_ANON_KEY` pada Environment Variables Vercel untuk environment yang digunakan.
 3. Deploy. Setelah perubahan environment variables, lakukan redeploy.
 4. Pada Supabase Auth URL Configuration, atur Site URL ke domain deployment dan tambahkan URL callback/redirect yang sesuai bila diperlukan.
-5. Uji daftar akun, login, simpan transaksi, filter bulan, saldo awal manual, pengambilan saldo akhir bulan sebelumnya, saldo akhir, ekspor laporan, dan akses dari perangkat/browser lain.
+5. Uji daftar akun, login, simpan transaksi, filter bulan, saldo awal manual, pengambilan saldo akhir bulan sebelumnya, saldo akhir, ekspor laporan Excel (`.xlsx`), dan akses dari perangkat/browser lain.
 
 ## Skema database
 

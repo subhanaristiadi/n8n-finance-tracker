@@ -50,6 +50,12 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 - [ ] Bulan pertama tanpa saldo awal tersimpan menggunakan saldo awal Rp0 sampai pengguna mengisinya.
 - [ ] Saldo awal dan saldo akhir tercantum pada ekspor Excel (`.xlsx`).
 - [ ] Filter pemasukan/pengeluaran bekerja.
+- [ ] Pengguna dapat mengedit tanggal, jumlah, deskripsi, dan kategori transaksinya sendiri.
+- [ ] Simpan edit menjalankan `UPDATE` ke `public.transactions` dengan filter `id` transaksi dan `user_id` pengguna aktif.
+- [ ] Setelah edit berhasil, riwayat dan ringkasan bulanan dimuat ulang dari Supabase.
+- [ ] Setelah browser di-refresh atau pengguna login ulang, nilai transaksi hasil edit tetap tersimpan.
+- [ ] Jika tanggal transaksi dipindahkan ke bulan lain, transaksi tidak lagi muncul pada daftar bulan asal dan muncul pada daftar bulan tujuan.
+- [ ] Akun A tidak dapat mengedit transaksi milik akun B melalui API Supabase.
 - [ ] Pengguna dapat menghapus transaksinya sendiri setelah konfirmasi.
 - [ ] Akun A tidak dapat membaca, mengubah, atau menghapus data akun B melalui API Supabase.
 - [ ] Setelah logout lalu login kembali, data akun yang benar dimuat.
@@ -71,5 +77,8 @@ Lakukan menggunakan dua akun uji yang berbeda. Jangan memakai data keuangan sens
 - Saldo akhir dihitung di aplikasi dari saldo awal + total pemasukan - total pengeluaran; tidak disimpan sebagai angka terpisah. Tombol ambil bulan sebelumnya menghitung saldo akhir bulan kalender sebelumnya lalu menyimpannya sebagai saldo awal bulan aktif.
 - Tanggal ditampilkan menggunakan tanggal kalender dari database; aplikasi belum memiliki dukungan multi-currency.
 - Input jumlah saat ini berupa bilangan bulat rupiah di UI, walaupun kolom database mendukung dua angka desimal.
-- Belum ada fitur edit transaksi, ekspor CSV, pencarian deskripsi, atau pengaturan anggaran.
+- Belum ada ekspor CSV, pencarian deskripsi, atau pengaturan anggaran.
+- Fitur edit transaksi hanya mengubah `tanggal`, `jumlah`, `deskripsi`, dan `kategori`; field `tipe`, `id`, `user_id`, dan `created_at` tidak diubah melalui form edit.
+- Update transaksi dilakukan dari browser menggunakan Supabase client yang memakai sesi pengguna. Keberhasilan update bergantung pada autentikasi, privilege tabel, dan RLS `UPDATE` yang benar pada project Supabase aktif.
+- Verifikasi pengguna bahwa sinkronisasi hasil edit sudah berjalan baik di Supabase; checklist tetap perlu dijalankan kembali setelah perubahan kode atau konfigurasi.
 - Source sudah ditambahkan ke repository, tetapi build dan uji integrasi perlu dijalankan setelah clone pada environment yang memiliki Node.js dan project Supabase.

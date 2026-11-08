@@ -10,6 +10,7 @@ import {
   CircleDollarSign,
   LogOut,
   Plus,
+  Pencil,
   RefreshCw,
   Trash2,
   Wallet,
@@ -51,6 +52,14 @@ export default function Home() {
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [editDraft, setEditDraft] = useState({
+    tanggal: "",
+    jumlah: "",
+    deskripsi: "",
+    kategori: "Makanan" as TransactionCategory,
+  });
+  const [updatingTransaction, setUpdatingTransaction] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [openingBalance, setOpeningBalance] = useState(0);
   const [openingBalanceInput, setOpeningBalanceInput] = useState("0");
@@ -425,6 +434,74 @@ export default function Home() {
     }
 
     setSaving(false);
+  }
+
+  function handleEditOpen(item: Transaction) {
+    setEditingTransaction(item);
+    setEditDraft({
+      tanggal: item.tanggal,
+      jumlah: String(item.jumlah),
+      deskripsi: item.deskripsi,
+      kategori: item.kategori,
+    });
+    setError("");
+    setMessage("");
+  }
+
+  function handleEditCancel() {
+    if (updatingTransaction) return;
+    setEditingTransaction(null);
+  }
+
+  async function handleSaveEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!supabase || !session?.user.id || !editingTransaction) return;
+
+    const amount = Number(editDraft.jumlah);
+    const description = editDraft.deskripsi.trim();
+
+    if (!editDraft.tanggal) {
+      setError("Tanggal wajib diisi.");
+      return;
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Jumlah harus lebih besar dari 0.");
+      return;
+    }
+    if (!description || description.length > 500) {
+      setError("Deskripsi wajib diisi dan maksimal 500 karakter.");
+      return;
+    }
+
+    setUpdatingTransaction(true);
+    setError("");
+    setMessage("");
+
+    const { data, error: updateError } = await supabase
+      .from("transactions")
+      .update({
+        tanggal: editDraft.tanggal,
+        jumlah: amount,
+        deskripsi: description,
+        kategori: editDraft.kategori,
+      })
+      .eq("id", editingTransaction.id)
+      .eq("user_id", session.user.id)
+      .select("id")
+      .single();
+
+    if (updateError) {
+      setError(`Gagal memperbarui transaksi di Supabase: ${updateError.message}`);
+    } else if (!data) {
+      setError("Transaksi tidak ditemukan atau tidak memiliki akses untuk mengubahnya.");
+    } else {
+      setEditingTransaction(null);
+      setMessage("Transaksi berhasil diperbarui dan disimpan ke Supabase.");
+      await loadTransactions();
+    }
+
+    setUpdatingTransaction(false);
   }
 
   async function handleDelete(item: Transaction) {
@@ -868,6 +945,82 @@ export default function Home() {
                 )}
               </div>
 
+              {editingTransaction && (
+                <form className="edit-transaction-form stack-form" onSubmit={handleSaveEdit}>
+                  <div className="edit-form-heading">
+                    <div>
+                      <h3>Edit transaksi</h3>
+                      <p>Perubahan akan disimpan ke database Supabase.</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="icon-button"
+                      onClick={handleEditCancel}
+                      disabled={updatingTransaction}
+                      aria-label="Tutup form edit"
+                      title="Tutup"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <label>
+                    Tanggal
+                    <input
+                      type="date"
+                      required
+                      value={editDraft.tanggal}
+                      onChange={(event) => setEditDraft({ ...editDraft, tanggal: event.target.value })}
+                    />
+                  </label>
+
+                  <label>
+                    Jumlah (Rp)
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      step="1"
+                      required
+                      value={editDraft.jumlah}
+                      onChange={(event) => setEditDraft({ ...editDraft, jumlah: event.target.value })}
+                    />
+                  </label>
+
+                  <label>
+                    Deskripsi
+                    <input
+                      maxLength={500}
+                      required
+                      value={editDraft.deskripsi}
+                      onChange={(event) => setEditDraft({ ...editDraft, deskripsi: event.target.value })}
+                    />
+                  </label>
+
+                  <label>
+                    Kategori
+                    <select
+                      value={editDraft.kategori}
+                      onChange={(event) => setEditDraft({ ...editDraft, kategori: event.target.value as TransactionCategory })}
+                    >
+                      {CATEGORIES.map((category) => (
+                        <option key={category} value={category}>{category}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {error && <p className="notice error">{error}</p>}
+                  <div className="edit-form-actions">
+                    <button type="button" className="export-button" onClick={handleEditCancel} disabled={updatingTransaction}>
+                      Batal
+                    </button>
+                    <button type="submit" className="primary-button" disabled={updatingTransaction}>
+                      {updatingTransaction ? "Menyimpan perubahan…" : "Simpan perubahan"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
               {loading && transactions.length === 0 ? (
                 <div className="empty-state">
                   <span className="spinner" /> Memuat transaksi…
@@ -920,14 +1073,24 @@ export default function Home() {
                           {currency.format(Number(item.jumlah))}
                         </strong>
 
-                        <button
-                          className="delete-button"
-                          onClick={() => void handleDelete(item)}
-                          title="Hapus transaksi"
-                          aria-label={`Hapus ${item.deskripsi}`}
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        <div className="transaction-actions">
+                          <button
+                            className="edit-button"
+                            onClick={() => handleEditOpen(item)}
+                            title="Edit transaksi"
+                            aria-label={`Edit ${item.deskripsi}`}
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            className="delete-button"
+                            onClick={() => void handleDelete(item)}
+                            title="Hapus transaksi"
+                            aria-label={`Hapus ${item.deskripsi}`}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

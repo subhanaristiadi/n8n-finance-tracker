@@ -9,7 +9,7 @@ Aplikasi web pencatatan pemasukan dan pengeluaran pribadi menggunakan **Next.js,
 - Kategori tertutup: `Makanan`, `Transport`, `Belanja`, `Tagihan`, `Gaji`, `Lainnya`.
 - Saldo awal bulanan yang dapat diisi manual atau diambil dari saldo akhir bulan sebelumnya.
 - Saldo akhir bulanan dihitung dari saldo awal + pemasukan - pengeluaran.
-- Riwayat transaksi dengan filter tipe, serta penghapusan transaksi.
+- Riwayat transaksi dengan filter tipe, pengeditan tanggal/jumlah/deskripsi/kategori, serta penghapusan transaksi.
 - Ekspor laporan keuangan bulanan dalam format Excel (`.xlsx`).
 - Row Level Security (RLS) agar pengguna hanya dapat membaca dan mengelola transaksinya sendiri.
 - Layout responsif untuk desktop dan ponsel.

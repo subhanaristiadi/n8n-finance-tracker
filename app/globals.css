@@ -151,3 +151,15 @@ code { background: #f1f4f7; padding: 2px 5px; border-radius: 4px; font-size: 11p
   .transaction-icon { width: 34px; height: 34px; }
   .transaction-amount strong { font-size: 10px; }
 }
+
+/* Edit transaction */
+.transaction-actions { display: flex; align-items: center; gap: 10px; }
+.edit-button, .delete-button { padding: 3px 0 0; border: 0; background: transparent; color: #8b95a4; display: inline-flex; align-items: center; }
+.edit-button:hover { color: var(--primary); }
+.delete-button:hover { color: var(--red); }
+.edit-transaction-form { margin: 0 0 16px; padding: 17px; border: 1px solid #dcebe5; border-radius: 13px; background: #f8fcfa; }
+.edit-form-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
+.edit-form-heading h3 { margin: 0; font-family: 'Manrope', sans-serif; font-size: 14px; }
+.edit-form-heading p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+.edit-form-actions { display: flex; gap: 9px; }
+.edit-form-actions > * { flex: 1; }
